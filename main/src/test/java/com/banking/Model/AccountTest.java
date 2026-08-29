@@ -75,6 +75,16 @@ public class AccountTest {
     }
     
     @Test
+    void testWithdraw() throws InvalidAmountException, InsufficientBalanceException {
+        Customer obj = new Customer(101, "Rahul", "rahul@gmail.com");
+        Account acc = new Account(5459972, obj, 100000);
+
+        acc.withdraw(5000);
+
+        assertEquals(95000, acc.getBalance());
+    }
+
+    @Test
     void testInvalidWithdraw() {
         Customer obj = new Customer(101, "Rahul", "rahul@gmail.com");
         Account acc = new Account(5459972, obj, 100000);
