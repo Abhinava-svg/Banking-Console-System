@@ -5,6 +5,8 @@ import static org.junit.jupiter.api.Assertions.*;
 import org.junit.jupiter.api.Test;
 
 import com.banking.Exceptions.InvalidAmountException;
+import com.banking.Exceptions.InsufficientBalanceException;
+
 
 public class AccountTest {
     @Test
@@ -85,6 +87,6 @@ public class AccountTest {
         Customer obj = new Customer(101, "Rahul", "rahul@gmail.com");
         Account acc = new Account(5459972, obj, 100000);
     
-        assertThrows(InvalidAmountException.class, () -> acc.withdraw(150000));
+        assertThrows(InsufficientBalanceException.class, () -> acc.withdraw(150000));
     }
 }

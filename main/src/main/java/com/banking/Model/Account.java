@@ -1,5 +1,6 @@
 package com.banking.Model;
 
+import com.banking.Exceptions.InsufficientBalanceException;
 import com.banking.Exceptions.InvalidAmountException;
 
 public class Account {
@@ -41,14 +42,18 @@ public class Account {
             throw new InvalidAmountException("Amount should be greater than zero");
     }
 
-    public void withdraw(double amount) throws InvalidAmountException {
-        if(amount > 0 && amount <= balance){
+    public void withdraw(double amount) throws InsufficientBalanceException, InvalidAmountException {
+        if(amount <= 0 ){
+            throw new InvalidAmountException("Amount should be greater than zero");
+        }
+        else if (amount > balance) {
+            throw new InsufficientBalanceException("Amount should not be greater than balance");
+        }
+        else{
             this.balance -= amount;
         }
-        else
-            throw new InvalidAmountException("amount should be greater than zero and smaller than balance");
+          
     }
-
     @Override
     public String toString(){
         return "accountNumber:" + accountNumber + "Customer:" + customer + "balance:" + balance;
