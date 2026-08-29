@@ -4,6 +4,8 @@ import static org.junit.jupiter.api.Assertions.*;
 
 import org.junit.jupiter.api.Test;
 
+import com.banking.Exceptions.InvalidAmountException;
+
 public class AccountTest {
     @Test
     void testGetAccountNumber() {
@@ -61,31 +63,28 @@ public class AccountTest {
     }
     
     @Test
-    void testDeposit() {
+    void testInvalidDeposit(){
         Customer obj = new Customer(101, "Rahul", "rahul@gmail.com");
         Account acc = new Account(5459972, obj, 100000);
         
-        acc.deposit(5000);
-        assertEquals(105000, acc.getBalance());
+        assertThrows(InvalidAmountException.class, () -> acc.deposit(-5000));
         
         
     }
     
     @Test
-    void testWithdraw() {
+    void testInvalidWithdraw() {
         Customer obj = new Customer(101, "Rahul", "rahul@gmail.com");
         Account acc = new Account(5459972, obj, 100000);
         
-        acc.withdraw(5000);
-        assertEquals(95000, acc.getBalance());
+        assertThrows(InvalidAmountException.class, () -> acc.withdraw(-5000));
     }
     
     @Test
     void testWithdrawMoreThanBalance() {
         Customer obj = new Customer(101, "Rahul", "rahul@gmail.com");
         Account acc = new Account(5459972, obj, 100000);
-        
-        acc.withdraw(150000);
-        assertEquals(100000, acc.getBalance());
+    
+        assertThrows(InvalidAmountException.class, () -> acc.withdraw(150000));
     }
 }
