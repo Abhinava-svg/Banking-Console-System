@@ -34,7 +34,7 @@ public class Bank {
         accountsMap.put(account.getAccountNumber(), account);
     }
 
-    public Account findAccountNumber(int accountNumber){
+    public Account findAccount(int accountNumber){
         return accountsMap.get(accountNumber);
     }
 }

@@ -38,7 +38,7 @@ public class BankTest {
         Account acc = new Account(54875, obj, 100000);
         bank.createAccount(acc);
 
-        assertEquals(54875, acc.getAccountNumber());
+        assertEquals(acc, bank.findAccount(54875));
     }
 
     @Test
@@ -48,7 +48,7 @@ public class BankTest {
         Account acc = new Account(54875, obj, 100000);
 
         bank.createAccount(acc);
-        bank.findAccountNumber(54875);
+        bank.findAccount(54875);
 
         assertEquals(54875, acc.getAccountNumber());
         assertEquals(obj, acc.getCustomer());
