@@ -28,4 +28,13 @@ public class Bank {
     public Customer findCustomer(int customerId){
         return customersMap.get(customerId);
     }
+
+    public void createAccount(Account account){
+        accounts.add(account);
+        accountsMap.put(account.getAccountNumber(), account);
+    }
+
+    public Account findAccountNumber(int accountNumber){
+        return accountsMap.get(accountNumber);
+    }
 }
