@@ -2,16 +2,22 @@ package com.banking.Model;
 
 import com.banking.Exceptions.InsufficientBalanceException;
 import com.banking.Exceptions.InvalidAmountException;
+import java.util.ArrayList;
+import java.util.List;
 
 public class Account {
     private final int accountNumber;
     private Customer customer;
     private double balance;
+    private List<Transaction> transactions;
+    private int transactionId = 1;
 
     public Account(int accountNumber, Customer customer, double balance){
         this.accountNumber = accountNumber;
         this.customer = customer;
         this.balance = balance;
+
+        transactions = new ArrayList<>();
     }
 
     public int getAccountNumber(){
@@ -37,6 +43,10 @@ public class Account {
     public void deposit(double amount) throws InvalidAmountException{
         if(amount > 0){
             this.balance += amount;
+
+            Transaction trans = new Transaction(1, "DEPOSIT", amount);
+            transactions.add(trans);
+            transactionId++;
         }
         else
             throw new InvalidAmountException("Amount should be greater than zero");
@@ -54,6 +64,11 @@ public class Account {
         }
           
     }
+
+    public List<Transaction> getTransaction(){
+        return transactions;
+    }
+
     @Override
     public String toString(){
         return "accountNumber:" + accountNumber + "Customer:" + customer + "balance:" + balance;
