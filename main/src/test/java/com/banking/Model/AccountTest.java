@@ -126,4 +126,21 @@ public class AccountTest {
         assertEquals("DEPOSIT", trans.getType());
         assertEquals(50000, trans.getAmount());
     }
+
+    @Test
+    void testWithdrawTransaction() throws InvalidAmountException, InsufficientBalanceException{
+        Customer obj = new Customer(101, "Rahul", "rahul@gmail.com");
+        Account acc = new Account(54875, obj, 100000);
+
+        acc.withdraw(5000);
+
+        assertEquals(95000, acc.getBalance());
+        assertEquals(1, acc.getTransaction().size());
+
+        Transaction trans = acc.getTransaction().get(0);
+        assertEquals(1, trans.getTransactionId());
+        assertEquals("WITHDRAW", trans.getType());
+        assertEquals(5000, trans.getAmount());
+        
+    }
 }

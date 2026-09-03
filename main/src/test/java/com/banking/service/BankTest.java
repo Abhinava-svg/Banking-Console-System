@@ -94,7 +94,7 @@ public class BankTest {
     void testTransfer() throws InvalidAmountException, InsufficientBalanceException{
       Bank bank = new Bank();
       
-      Customer obj1 = new Customer(101, "Rahul", "rahuk@gmail.com");
+      Customer obj1 = new Customer(101, "Rahul", "rahul@gmail.com");
       Customer obj2 = new Customer(102, "Priya", "priya@gmail.com");
 
       Account acc1 = new Account(54875, obj1, 100000);
@@ -108,5 +108,34 @@ public class BankTest {
       assertEquals(80000, acc1.getBalance());
       assertEquals(70000, acc2.getBalance());
 
+    }
+
+    @Test
+    void testTransactionTransfer() throws InvalidAmountException, InsufficientBalanceException{
+        Bank bank = new Bank();
+
+        Customer obj1 = new Customer(101, "Rahul", "rahul@gmail.com");
+        Account acc1 = new Account(54875, obj1, 100000);
+
+        Customer obj2 = new Customer(102, "Priya", "priya@gmail.com");
+        Account acc2 = new Account(54876, obj2, 50000);
+
+        bank.createAccount(acc1);
+        bank.createAccount(acc2);
+
+        bank.transfer(54875, 54876, 10000);
+
+        assertEquals(90000, acc1.getBalance());
+        assertEquals(60000, acc2.getBalance());
+
+        assertEquals(1, acc1.getTransaction().size());
+        assertEquals(1, acc2.getTransaction().size());
+
+        assertEquals("WITHDRAW", acc1.getTransaction().get(0).getType());
+        assertEquals("DEPOSIT", acc2.getTransaction().get(0).getType());
+
+        assertEquals(10000, acc1.getTransaction().get(0).getAmount());
+        assertEquals(10000, acc2.getTransaction().get(0).getAmount());
+        
     }
 }

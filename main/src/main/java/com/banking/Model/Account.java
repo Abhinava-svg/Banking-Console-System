@@ -61,6 +61,9 @@ public class Account {
         }
         else{
             this.balance -= amount;
+            Transaction trans = new Transaction(transactionId, "WITHDRAW", amount);
+            transactions.add(trans);
+            transactionId++;
         }
           
     }
