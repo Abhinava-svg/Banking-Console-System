@@ -1,5 +1,6 @@
 package com.banking.Model;
 
+import com.banking.Enums.TransactionType;
 import com.banking.Exceptions.InsufficientBalanceException;
 import com.banking.Exceptions.InvalidAmountException;
 import java.util.ArrayList;
@@ -44,7 +45,7 @@ public class Account {
         if(amount > 0){
             this.balance += amount;
 
-            Transaction trans = new Transaction(1, "DEPOSIT", amount);
+            Transaction trans = new Transaction(transactionId, TransactionType.DEPOSIT, amount);
             transactions.add(trans);
             transactionId++;
         }
@@ -61,7 +62,7 @@ public class Account {
         }
         else{
             this.balance -= amount;
-            Transaction trans = new Transaction(transactionId, "WITHDRAW", amount);
+            Transaction trans = new Transaction(transactionId, TransactionType.WITHDRAW, amount);
             transactions.add(trans);
             transactionId++;
         }
@@ -70,6 +71,12 @@ public class Account {
 
     public List<Transaction> getTransaction(){
         return transactions;
+    }
+
+    public void showTransaction(){
+        for(Transaction trans: transactions){
+            System.out.println(trans);
+        }
     }
 
     @Override

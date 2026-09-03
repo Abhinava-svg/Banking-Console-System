@@ -1,6 +1,7 @@
 package com.banking.service;
 
 import com.banking.Model.Customer;
+import com.banking.Exceptions.AccountNotFound;
 import com.banking.Exceptions.InsufficientBalanceException;
 import com.banking.Exceptions.InvalidAmountException;
 import com.banking.Model.Account;
@@ -39,10 +40,13 @@ public class Bank {
     public Account findAccount(int accountNumber){
         return accountsMap.get(accountNumber);
     }
+    public void deposit(int accountNumber, double amount)throws InvalidAmountException, AccountNotFound{
+        Account acc = findAccount(accountNumber);
 
-    public void deposit(int accountNumber, double amount) throws InvalidAmountException{
-        Account account = findAccount(accountNumber);
-        account.deposit(amount);
+        if(acc == null){
+            throw new AccountNotFound("Account not Found");
+        }
+        acc.deposit(amount);
     }
 
     public void withdraw(int accountNumber, double amount) throws InvalidAmountException, InsufficientBalanceException{
@@ -58,4 +62,7 @@ public class Bank {
         fromAcc.withdraw(amount);
         toAcc.deposit(amount);
     }
+
 }
+
+

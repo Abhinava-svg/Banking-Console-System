@@ -4,6 +4,7 @@ import static org.junit.jupiter.api.Assertions.*;
 
 import org.junit.jupiter.api.Test;
 
+import com.banking.Enums.TransactionType;
 import com.banking.Exceptions.InsufficientBalanceException;
 import com.banking.Exceptions.InvalidAmountException;
 import com.banking.Model.Account;
@@ -131,8 +132,8 @@ public class BankTest {
         assertEquals(1, acc1.getTransaction().size());
         assertEquals(1, acc2.getTransaction().size());
 
-        assertEquals("WITHDRAW", acc1.getTransaction().get(0).getType());
-        assertEquals("DEPOSIT", acc2.getTransaction().get(0).getType());
+        assertEquals(TransactionType.WITHDRAW, acc1.getTransaction().get(0).getType());
+        assertEquals(TransactionType.DEPOSIT, acc2.getTransaction().get(0).getType());
 
         assertEquals(10000, acc1.getTransaction().get(0).getAmount());
         assertEquals(10000, acc2.getTransaction().get(0).getAmount());

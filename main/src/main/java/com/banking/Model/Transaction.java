@@ -1,11 +1,13 @@
 package com.banking.Model;
 
+import com.banking.Enums.TransactionType;
+
 public class Transaction{
     private final int transactionId;
-    private final String type;
+    private final TransactionType type;
     private final double amount;
     
-    public Transaction(int transactionId, String type, double amount) {
+    public Transaction(int transactionId, TransactionType type, double amount) {
         this.transactionId = transactionId;
         this.type = type;
         this.amount = amount;
@@ -16,7 +18,7 @@ public class Transaction{
         return transactionId;
     }
 
-    public String getType(){
+    public TransactionType getType(){
         return type;
     }
 
