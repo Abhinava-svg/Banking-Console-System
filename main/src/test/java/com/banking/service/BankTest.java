@@ -199,4 +199,56 @@ public class BankTest {
 
         assertThrows(DuplicateAccountException.class, () -> {bank.createAccount(acc2);});
     }
+
+    @Test
+    void testTransferInsufficientBalance() throws InvalidAmountException, InsufficientBalanceException, AccountNotFoundException, DuplicateAccountException{
+        Bank bank = new Bank();
+
+        Customer obj1 = new Customer(101, "Rahul", "rahul@gmail.com");
+        Customer obj2 = new Customer(102, "Priya", "priya@gmail.com");
+
+        Account acc1 = new Account(54875, obj1, 100000);
+        Account acc2 = new Account(54876, obj2, 50000);
+
+        bank.createAccount(acc1);
+        bank.createAccount(acc2);
+
+        assertThrows(InsufficientBalanceException.class, () -> {bank.transfer(54875, 54876, 200000);});
+
+        assertEquals(100000, acc1.getBalance());
+        assertEquals(50000, acc2.getBalance());
+    }
+
+    @Test
+    void testTransferInvalidAmount() throws InvalidAmountException, InsufficientBalanceException, AccountNotFoundException, DuplicateAccountException{
+        Bank bank = new Bank();
+
+        Customer obj1 = new Customer(101, "Rahul", "rahul@gmail.com");
+        Customer obj2 = new Customer(102, "Priya", "priya@gmail.com");
+
+        Account acc1 = new Account(54875, obj1, 100000);
+        Account acc2 = new Account(54876, obj2, 50000);
+
+        bank.createAccount(acc1);
+        bank.createAccount(acc2);
+
+        assertThrows(InvalidAmountException.class, () -> {bank.transfer(54875, 54876, -5000);});
+
+        assertEquals(100000, acc1.getBalance());
+        assertEquals(50000, acc2.getBalance());
+    }
+
+    @Test
+    void testTransferToSameAccount() throws InvalidAmountException, InsufficientBalanceException, AccountNotFoundException, DuplicateAccountException{
+        Bank bank = new Bank();
+
+        Customer obj = new Customer(101, "Rahul", "rahul@gmail.com");
+        Account acc = new Account(54875, obj, 100000);
+
+        bank.createAccount(acc);
+
+        assertThrows(IllegalArgumentException.class, () -> {bank.transfer(54875, 54875, 50000);});
+        assertEquals(100000, acc.getBalance());
+        assertEquals(0, acc.getTransaction().size());
+    }
 }

@@ -83,6 +83,10 @@ public class Bank {
             throw new AccountNotFoundException("Account not found");
         }
         
+        if(fromAccountNumber == toAccountNumber){
+            throw new IllegalArgumentException("Cannot transfer to the same account");
+        }
+        
         fromAcc.withdraw(amount);
         toAcc.deposit(amount);
     }

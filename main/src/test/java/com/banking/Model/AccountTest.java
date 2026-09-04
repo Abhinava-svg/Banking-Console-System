@@ -144,4 +144,38 @@ public class AccountTest {
         assertEquals(5000, trans.getAmount());
         
     }
+
+    @Test
+    void testTransactionIdIncrement() throws InvalidAmountException, InsufficientBalanceException{
+
+        Account acc = new Account(54875, new Customer(101, "Rahul", "rahul@gmail.com"), 100000);
+        acc.deposit(5000);
+        acc.withdraw(3000);
+        acc.deposit(2000);
+
+        assertEquals(3, acc.getTransaction().size());
+
+        assertEquals(1, acc.getTransaction().get(0).getTransactionId());
+        assertEquals(2, acc.getTransaction().get(1).getTransactionId());
+        assertEquals(3, acc.getTransaction().get(2).getTransactionId());
+    }
+
+    @Test
+    void testMultipleTransaction() throws InvalidAmountException, InsufficientBalanceException{
+        Account acc = new Account(54875, new Customer(101, "Rahul", "rahul@gmail.com"), 100000);
+
+        acc.deposit(5000);
+        acc.withdraw(2000);
+        acc.deposit(3000);
+
+        assertEquals(106000, acc.getBalance());
+        assertEquals(3, acc.getTransaction().size());
+        assertEquals(TransactionType.DEPOSIT, acc.getTransaction().get(0).getType());
+        assertEquals(TransactionType.WITHDRAW, acc.getTransaction().get(1).getType());
+        assertEquals(TransactionType.DEPOSIT, acc.getTransaction().get(2).getType());
+
+        assertEquals(5000, acc.getTransaction().get(0).getAmount());
+        assertEquals(2000, acc.getTransaction().get(1).getAmount());
+        assertEquals(3000, acc.getTransaction().get(2).getAmount());
+    }
 }
