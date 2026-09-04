@@ -4,6 +4,7 @@ import com.banking.Enums.TransactionType;
 import com.banking.Exceptions.InsufficientBalanceException;
 import com.banking.Exceptions.InvalidAmountException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 public class Account {
@@ -31,10 +32,6 @@ public class Account {
 
     public Customer getCustomer(){
         return customer;
-    }
-
-    public void setBalance(double balance){
-        this.balance = balance;
     }
 
     public double getBalance(){
@@ -70,7 +67,7 @@ public class Account {
     }
 
     public List<Transaction> getTransaction(){
-        return transactions;
+        return Collections.unmodifiableList(transactions);
     }
 
     public void showTransaction(){

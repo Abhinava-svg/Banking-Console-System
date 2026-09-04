@@ -36,15 +36,6 @@ public class AccountTest {
         
     }
     
-    @Test
-    void testSetBalance() {
-        Customer obj = new Customer(101, "Rahul", "rahul@gmail.com");
-        Account acc = new Account(5459972, obj, 100000);
-
-        acc.setBalance(200000);
-        assertEquals(200000, acc.getBalance());
-        
-    }
     
     @Test
     void testSetCustomer() {
@@ -102,14 +93,18 @@ public class AccountTest {
     }
 
     @Test
-    void testGetTransaction() {
+    void testGetTransaction() throws InvalidAmountException {
         Customer obj = new Customer(101, "Rahul", "rahul@gmail.com");
         Account acc = new Account(54875, obj, 100000);
 
-        Transaction trans = new Transaction(1, TransactionType.DEPOSIT, 50000);
-        acc.getTransaction().add(trans);
+        acc.deposit(50000);
         assertEquals(1, acc.getTransaction().size());
-        assertEquals(trans, acc.getTransaction().get(0));
+
+        Transaction trans = acc.getTransaction().get(0);
+
+        assertEquals(TransactionType.DEPOSIT, trans.getType());
+        assertEquals(50000, trans.getAmount());
+        assertEquals(1, trans.getTransactionId());
     }
 
     @Test
@@ -177,5 +172,30 @@ public class AccountTest {
         assertEquals(5000, acc.getTransaction().get(0).getAmount());
         assertEquals(2000, acc.getTransaction().get(1).getAmount());
         assertEquals(3000, acc.getTransaction().get(2).getAmount());
+    }
+
+    @Test
+    void testTransferListCannotBeModifiedDirectly() throws InvalidAmountException{
+        Account acc = new Account(54875, new Customer(101, "Rahul", "rahul@gmail.com"), 100000);
+        acc.deposit(5000);
+
+        assertEquals(1, acc.getTransaction().size());
+
+        assertThrows(UnsupportedOperationException.class, () -> {acc.getTransaction().clear();});
+        assertEquals(1, acc.getTransaction().size());
+    }
+
+    @Test
+    void testBalanceCannotBeChangedDirectly() throws InvalidAmountException, InsufficientBalanceException {
+        Account acc = new Account(54875, new Customer(101, "Rahul", "rahul@gmail.com"), 100000);
+        acc.deposit(5000);
+
+        assertEquals(105000, acc.getBalance());
+        assertEquals(1, acc.getTransaction().size());
+
+        acc.withdraw(50000);
+
+        assertEquals(55000, acc.getBalance());
+        assertEquals(2, acc.getTransaction().size());
     }
 }
