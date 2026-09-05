@@ -44,6 +44,11 @@ public class Bank {
         if(accountsMap.containsKey(account.getAccountNumber())){
             throw new DuplicateAccountException("Account number already exist");
         }
+
+        if(!customersMap.containsKey(account.getCustomer().getCustomerId())){
+            throw new IllegalArgumentException("Customer does not exist");
+        }
+
         accounts.add(account);
         accountsMap.put(account.getAccountNumber(), account);
     }

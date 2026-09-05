@@ -39,21 +39,23 @@ public class BankTest {
     }
 
     @Test
-    void testCreateAccount() throws DuplicateAccountException{
+    void testCreateAccount() throws DuplicateAccountException, DuplicateCustomerException{
         Bank bank = new Bank();
         Customer obj = new Customer(101, "Rahul", "rahul@gmail.com");
         Account acc = new Account(54875, obj, 100000);
+        bank.createCustomer(obj);
         bank.createAccount(acc);
 
         assertEquals(acc, bank.findAccount(54875));
     }
 
     @Test
-    void testFindAccountNumber() throws DuplicateAccountException{
+    void testFindAccountNumber() throws DuplicateAccountException, DuplicateCustomerException{
         Bank bank = new Bank();
         Customer obj = new Customer(101, "Rahul", "rahul@gmail.com");
         Account acc = new Account(54875, obj, 100000);
 
+        bank.createCustomer(obj);
         bank.createAccount(acc);
         Account result = bank.findAccount(54875);
 
@@ -63,40 +65,44 @@ public class BankTest {
     }
 
     @Test
-    void testDeposit() throws DuplicateAccountException{
+    void testDeposit() throws DuplicateAccountException, DuplicateCustomerException{
         Bank bank = new Bank();
         Customer obj = new Customer(101, "Rahul", "rahul@gmail.com");
         Account acc = new Account(54875, obj, 100000);
 
+        bank.createCustomer(obj);
         bank.createAccount(acc);
         assertThrows(InvalidAmountException.class, () -> {bank.deposit(54875, -5000);});
         assertEquals(100000, acc.getBalance());
     }
 
     @Test
-    void testInsufficientBalance() throws InvalidAmountException, AccountNotFoundException, DuplicateAccountException {
+    void testInsufficientBalance() throws InvalidAmountException, AccountNotFoundException, DuplicateAccountException, DuplicateCustomerException {
         Bank bank = new Bank();
 
         Customer obj = new Customer(101, "Rahul", "rahul@gmail.com");
         Account acc = new Account(54875, obj, 105000);
+
+        bank.createCustomer(obj);
         bank.createAccount(acc);
         assertThrows(InsufficientBalanceException.class, () -> {bank.withdraw(54875, 1000000);});
         assertEquals(105000, acc.getBalance());
     }
 
     @Test
-    void testWithdraw() throws InvalidAmountException, InsufficientBalanceException, AccountNotFoundException, DuplicateAccountException{
+    void testWithdraw() throws InvalidAmountException, InsufficientBalanceException, AccountNotFoundException, DuplicateAccountException, DuplicateCustomerException{
         Bank bank = new Bank();
         Customer obj = new Customer(101, "Rahul", "rahul@gmail.com");
         Account acc = new Account(54875, obj, 105000);
 
+        bank.createCustomer(obj);
         bank.createAccount(acc);
         assertThrows(InvalidAmountException.class, () -> {bank.withdraw(54875, -5000);});
         assertEquals(105000, acc.getBalance());
     }
 
     @Test
-    void testTransfer() throws InvalidAmountException, InsufficientBalanceException, AccountNotFoundException, DuplicateAccountException{
+    void testTransfer() throws InvalidAmountException, InsufficientBalanceException, AccountNotFoundException, DuplicateAccountException, DuplicateCustomerException{
       Bank bank = new Bank();
       
       Customer obj1 = new Customer(101, "Rahul", "rahul@gmail.com");
@@ -104,6 +110,9 @@ public class BankTest {
 
       Account acc1 = new Account(54875, obj1, 100000);
       Account acc2 = new Account(54876, obj2, 50000);
+
+      bank.createCustomer(obj1);
+      bank.createCustomer(obj2);
 
       bank.createAccount(acc1);
       bank.createAccount(acc2);
@@ -116,7 +125,7 @@ public class BankTest {
     }
 
     @Test
-    void testTransactionTransfer() throws InvalidAmountException, InsufficientBalanceException, AccountNotFoundException, DuplicateAccountException{
+    void testTransactionTransfer() throws InvalidAmountException, InsufficientBalanceException, AccountNotFoundException, DuplicateAccountException, DuplicateCustomerException{
         Bank bank = new Bank();
 
         Customer obj1 = new Customer(101, "Rahul", "rahul@gmail.com");
@@ -125,8 +134,12 @@ public class BankTest {
         Customer obj2 = new Customer(102, "Priya", "priya@gmail.com");
         Account acc2 = new Account(54876, obj2, 50000);
 
+        bank.createCustomer(obj1);
         bank.createAccount(acc1);
+
+        bank.createCustomer(obj2);
         bank.createAccount(acc2);
+
 
         bank.transfer(54875, 54876, 10000);
 
@@ -164,11 +177,12 @@ public class BankTest {
     }
 
     @Test
-    void testTransferDestinationAccountNotFound() throws InvalidAmountException, InsufficientBalanceException, DuplicateAccountException{
+    void testTransferDestinationAccountNotFound() throws InvalidAmountException, InsufficientBalanceException, DuplicateAccountException, DuplicateCustomerException{
         Bank bank = new Bank();
 
         Customer obj = new Customer(101, "Rahul", "rahul@gmail.com");
         Account acc = new Account(54875, obj, 100000);
+        bank.createCustomer(obj);
         bank.createAccount(acc);
         assertThrows(AccountNotFoundException.class, () -> {bank.transfer(54875, 54876, 5000);});
     }
@@ -187,7 +201,7 @@ public class BankTest {
     }
 
     @Test
-    void testDuplicateAccount() throws DuplicateAccountException{
+    void testDuplicateAccount() throws DuplicateAccountException, DuplicateCustomerException{
 
         Bank bank = new Bank();
         Customer obj1 = new Customer(101, "Rahul", "rahul@gmail.com");
@@ -195,13 +209,17 @@ public class BankTest {
 
         Account acc1 = new Account(54875, obj1, 100000);
         Account acc2 = new Account(54875, obj2, 50000);
+
+        bank.createCustomer(obj1);
+        bank.createCustomer(obj2);
+
         bank.createAccount(acc1);
 
         assertThrows(DuplicateAccountException.class, () -> {bank.createAccount(acc2);});
     }
 
     @Test
-    void testTransferInsufficientBalance() throws InvalidAmountException, InsufficientBalanceException, AccountNotFoundException, DuplicateAccountException{
+    void testTransferInsufficientBalance() throws InvalidAmountException, InsufficientBalanceException, AccountNotFoundException, DuplicateAccountException, DuplicateCustomerException{
         Bank bank = new Bank();
 
         Customer obj1 = new Customer(101, "Rahul", "rahul@gmail.com");
@@ -209,6 +227,9 @@ public class BankTest {
 
         Account acc1 = new Account(54875, obj1, 100000);
         Account acc2 = new Account(54876, obj2, 50000);
+
+        bank.createCustomer(obj1);
+        bank.createCustomer(obj2);
 
         bank.createAccount(acc1);
         bank.createAccount(acc2);
@@ -220,7 +241,7 @@ public class BankTest {
     }
 
     @Test
-    void testTransferInvalidAmount() throws InvalidAmountException, InsufficientBalanceException, AccountNotFoundException, DuplicateAccountException{
+    void testTransferInvalidAmount() throws InvalidAmountException, InsufficientBalanceException, AccountNotFoundException, DuplicateAccountException, DuplicateCustomerException{
         Bank bank = new Bank();
 
         Customer obj1 = new Customer(101, "Rahul", "rahul@gmail.com");
@@ -228,6 +249,9 @@ public class BankTest {
 
         Account acc1 = new Account(54875, obj1, 100000);
         Account acc2 = new Account(54876, obj2, 50000);
+
+        bank.createCustomer(obj1);
+        bank.createCustomer(obj2);
 
         bank.createAccount(acc1);
         bank.createAccount(acc2);
@@ -239,16 +263,29 @@ public class BankTest {
     }
 
     @Test
-    void testTransferToSameAccount() throws InvalidAmountException, InsufficientBalanceException, AccountNotFoundException, DuplicateAccountException{
+    void testTransferToSameAccount() throws InvalidAmountException, InsufficientBalanceException, AccountNotFoundException, DuplicateAccountException, DuplicateCustomerException{
         Bank bank = new Bank();
 
         Customer obj = new Customer(101, "Rahul", "rahul@gmail.com");
         Account acc = new Account(54875, obj, 100000);
 
+        bank.createCustomer(obj);
         bank.createAccount(acc);
 
         assertThrows(IllegalArgumentException.class, () -> {bank.transfer(54875, 54875, 50000);});
         assertEquals(100000, acc.getBalance());
         assertEquals(0, acc.getTransaction().size());
+    }
+
+    @Test
+    void testCreateAccountForNonExistenceCustomer() throws DuplicateAccountException{
+
+        Bank bank = new Bank();
+        
+        Customer obj = new Customer(101, "Rahul", "rahul@gmail.com");
+        Account acc = new Account(54875, obj, 100000);
+
+        assertThrows(IllegalArgumentException.class, () -> {bank.createAccount(acc);});
+        assertNull(bank.findAccount(54875));
     }
 }
