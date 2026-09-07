@@ -288,4 +288,34 @@ public class BankTest {
         assertThrows(IllegalArgumentException.class, () -> {bank.createAccount(acc);});
         assertNull(bank.findAccount(54875));
     }
+
+    @Test
+    void testInvalidCustomer() throws DuplicateCustomerException{
+        Bank bank = new Bank();
+        Customer obj = new Customer(101, "", "rahul@gmail.com");
+
+        assertThrows(IllegalArgumentException.class, () -> {bank.createCustomer(obj);});
+        assertNull(bank.findCustomer(101));
+    }
+
+    @Test
+    void testInvalidCustomerEmail() throws DuplicateCustomerException{
+
+        Bank bank = new Bank();
+        Customer obj = new Customer(101, "Rahul", "");
+
+        assertThrows(IllegalArgumentException.class, () -> {bank.createCustomer(obj);});
+        assertNull(bank.findCustomer(101));
+    }
+
+    @Test
+    void testCreateInvalidCustomerId(){
+        Bank bank = new Bank();
+
+        Customer obj = new Customer(0, "Rahul", "rahul@gmail.com");
+        assertThrows(IllegalArgumentException.class, () -> {bank.createCustomer(obj);});
+        assertNull(bank.findCustomer(0));
+    }
+
+    
 }

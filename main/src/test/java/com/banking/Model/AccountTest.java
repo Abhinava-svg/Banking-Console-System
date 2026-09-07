@@ -198,4 +198,17 @@ public class AccountTest {
         assertEquals(55000, acc.getBalance());
         assertEquals(2, acc.getTransaction().size());
     }
+
+    @Test
+    void testInvalidAccountNumber(){
+        Customer obj = new Customer(101, "Rahul", "rahul@gmail.com");
+        assertThrows(IllegalArgumentException.class, () -> {new Account(0, obj, 100000);});
+        assertThrows(IllegalArgumentException.class, () -> {new Account(-10, obj, 100000);});
+    }
+
+    @Test 
+    void testInvalidInitialBalance(){
+        Customer obj = new Customer(101, "Rahul", "rahul@gmail.com");
+        assertThrows(IllegalArgumentException.class, () -> {new Account(54875, obj, -50000);});
+    }
 }

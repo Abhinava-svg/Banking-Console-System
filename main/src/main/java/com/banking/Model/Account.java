@@ -15,6 +15,15 @@ public class Account {
     private int transactionId = 1;
 
     public Account(int accountNumber, Customer customer, double balance){
+
+        if (accountNumber <= 0){
+            throw new IllegalArgumentException("Account number must be greater than zero");
+        }
+
+        if(balance < 0){
+            throw new IllegalArgumentException("Balance should be greater than zero");
+        }
+
         this.accountNumber = accountNumber;
         this.customer = customer;
         this.balance = balance;

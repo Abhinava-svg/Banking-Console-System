@@ -31,6 +31,19 @@ public class Bank {
         if(customersMap.containsKey(customer.getCustomerId())){
             throw new DuplicateCustomerException("Customer ID already exists");
         }
+
+        if(customer.getName() == null || customer.getName().trim().isEmpty()){
+            throw new IllegalArgumentException("Customer name cannot be empty");
+        }
+
+        if(customer.getEmail() == null || customer.getEmail().trim().isEmpty()){
+            throw new IllegalArgumentException("Customer Email cannot be empty");
+        }
+
+        if(customer.getCustomerId() <= 0){
+            throw new IllegalArgumentException("CustomerId cannot be empty");
+        }
+
         customers.add(customer);
         customersMap.put(customer.getCustomerId(), customer);
     }
