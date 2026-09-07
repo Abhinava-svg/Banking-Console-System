@@ -8,6 +8,19 @@ public class Transaction{
     private final double amount;
     
     public Transaction(int transactionId, TransactionType type, double amount) {
+
+        if (transactionId <= 0){
+            throw new IllegalArgumentException("Transaction ID must be greater than zero");
+        }
+
+        if(type == null){
+            throw new IllegalArgumentException("Type cannot be null");
+        }
+
+        if(amount <= 0){
+            throw new IllegalArgumentException("Amount cannot be negative or zero");
+        }
+
         this.transactionId = transactionId;
         this.type = type;
         this.amount = amount;

@@ -10,7 +10,7 @@ public class SavingsAccount extends Account{
         super(accountNumber, customer, balance);
 
         if(interestRate <= 0 || interestRate > 100){
-            throw new IllegalArgumentException("Invalid Interest rate");
+            throw new IllegalArgumentException("Invalid interest rate");
         }
         this.interestRate = interestRate;
     }
@@ -18,7 +18,7 @@ public class SavingsAccount extends Account{
     public void setInterestRate(double interestRate){
 
         if(interestRate <= 0 || interestRate > 100){
-            throw new IllegalArgumentException("Invalid Interest rate");
+            throw new IllegalArgumentException("Invalid interest rate");
         }
         this.interestRate = interestRate;
     }

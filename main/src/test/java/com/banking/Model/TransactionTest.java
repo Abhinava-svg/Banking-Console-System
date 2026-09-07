@@ -39,4 +39,21 @@ public class TransactionTest {
 
         assertEquals("TransactionId:1Type:DEPOSITAmount:100000.0", result);
     }
+
+    @Test 
+    void testInvalidTransactionId(){
+        assertThrows(IllegalArgumentException.class, () -> {new Transaction(0, TransactionType.DEPOSIT, 100000);});
+        assertThrows(IllegalArgumentException.class, () -> {new Transaction(-10, TransactionType.WITHDRAW, 50000);});
+    }
+
+    @Test 
+    void testNullType(){
+        assertThrows(IllegalArgumentException.class, () -> {new Transaction(1, null, 100000);});
+    }
+
+    @Test 
+    void testInvalidTransactionAmount(){
+        assertThrows(IllegalArgumentException.class, () -> {new Transaction(1, TransactionType.DEPOSIT, 0);});
+        assertThrows(IllegalArgumentException.class, () -> {new Transaction(2, TransactionType.WITHDRAW, -500);});
+    }
 }

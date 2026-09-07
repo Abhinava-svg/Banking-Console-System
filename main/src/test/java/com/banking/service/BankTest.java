@@ -317,5 +317,15 @@ public class BankTest {
         assertNull(bank.findCustomer(0));
     }
 
-    
+    @Test 
+    void testNullCustomer(){
+        Bank bank = new Bank();
+        assertThrows(IllegalArgumentException.class, () -> {bank.createCustomer(null);});
+    }
+
+    @Test 
+    void testNullAccount(){
+        Bank bank = new Bank();
+        assertThrows(IllegalArgumentException.class, () -> {bank.createAccount(null);});
+    }
 }

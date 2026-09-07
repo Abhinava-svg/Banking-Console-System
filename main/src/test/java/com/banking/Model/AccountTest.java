@@ -211,4 +211,18 @@ public class AccountTest {
         Customer obj = new Customer(101, "Rahul", "rahul@gmail.com");
         assertThrows(IllegalArgumentException.class, () -> {new Account(54875, obj, -50000);});
     }
+
+    @Test 
+    void testNullCustomer(){
+        assertThrows(IllegalArgumentException.class, () -> {new Account(54875, null, 100000);});
+    }
+
+    @Test 
+    void testSetCustomerNull(){
+        Customer obj = new Customer(101, "Rahul", "rahul@gmail.com");
+        Account acc = new Account(54875, obj, 100000);
+
+        assertThrows(IllegalArgumentException.class, () -> {acc.setCustomer(null);});
+        assertEquals(obj, acc.getCustomer());
+    }
 }

@@ -28,21 +28,27 @@ public class Bank {
 
     public void createCustomer(Customer customer) throws DuplicateCustomerException{
 
+        if(customer == null){
+            throw new IllegalArgumentException("Customer cannot be null");
+        }
+        
+        
+        if(customer.getCustomerId() <= 0){
+            throw new IllegalArgumentException("CustomerId must be greater than zero");
+        }
+        
+        if(customer.getName() == null || customer.getName().trim().isEmpty()){
+            throw new IllegalArgumentException("Customer name cannot be empty");
+        }
+        
+        if(customer.getEmail() == null || customer.getEmail().trim().isEmpty()){
+            throw new IllegalArgumentException("Customer Email cannot be empty");
+        }
+        
         if(customersMap.containsKey(customer.getCustomerId())){
             throw new DuplicateCustomerException("Customer ID already exists");
         }
 
-        if(customer.getName() == null || customer.getName().trim().isEmpty()){
-            throw new IllegalArgumentException("Customer name cannot be empty");
-        }
-
-        if(customer.getEmail() == null || customer.getEmail().trim().isEmpty()){
-            throw new IllegalArgumentException("Customer Email cannot be empty");
-        }
-
-        if(customer.getCustomerId() <= 0){
-            throw new IllegalArgumentException("CustomerId cannot be empty");
-        }
 
         customers.add(customer);
         customersMap.put(customer.getCustomerId(), customer);
@@ -53,6 +59,10 @@ public class Bank {
     }
 
     public void createAccount(Account account) throws DuplicateAccountException{
+
+        if(account == null){
+            throw new IllegalArgumentException("Account cannot be null");
+        }
 
         if(accountsMap.containsKey(account.getAccountNumber())){
             throw new DuplicateAccountException("Account number already exist");

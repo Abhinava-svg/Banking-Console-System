@@ -21,7 +21,11 @@ public class Account {
         }
 
         if(balance < 0){
-            throw new IllegalArgumentException("Balance should be greater than zero");
+            throw new IllegalArgumentException("initial balance cannot be negative");
+        }
+
+        if(customer == null){
+            throw new IllegalArgumentException("Customer cannot be null");
         }
 
         this.accountNumber = accountNumber;
@@ -36,8 +40,13 @@ public class Account {
     }
 
     public void setCustomer(Customer customer){
+
+        if(customer == null){
+            throw new IllegalArgumentException("Customer cannot be null"); 
+        }
         this.customer = customer;
     }
+
 
     public Customer getCustomer(){
         return customer;
