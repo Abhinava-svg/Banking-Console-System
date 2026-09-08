@@ -2,6 +2,8 @@ package com.banking;
 
 import com.banking.Model.Customer;
 import com.banking.service.Bank;
+import com.banking.Model.Account;
+import com.banking.Exceptions.DuplicateAccountException;
 import com.banking.Exceptions.DuplicateCustomerException;
 
 import java.util.Scanner;
@@ -21,7 +23,7 @@ public class Main{
             System.out.println("4. Withdraw");
             System.out.println("5. Transfer");
             System.out.println("6. Check Balance");
-            System.out.println("7. View Transaction");
+            System.out.println("7. View Transactions");
             System.out.println("=============================");
 
             System.out.println("Enter your choice");
@@ -30,7 +32,7 @@ public class Main{
 
             switch(choice){
 
-                case 1: 
+                case 1: {
                     System.out.println("Enter Customer ID:");
                     int CustomerId = sc.nextInt();
                     sc.nextLine();
@@ -55,30 +57,142 @@ public class Main{
                     }
 
                     break;
+                }
 
-                case 2: 
-                    System.out.println("Create Account selected");
-                    break;
+                case 2: {
+                    System.out.println("Enter Customer ID:");
+                    int customerId = sc.nextInt();
 
-                case 3:
-                    System.out.println("Deposit selected");
-                    break;
+                    Customer customer = bank.findCustomer(customerId);
 
-                case 4:
-                    System.out.println("Withdraw selected");
-                    break;
+                    if(customer == null){
+                        System.out.println("Customer not found");
+                        break;
+                    }
 
-                case 5:
-                    System.out.println("Transfer selected");
-                    break;
+                    System.out.println("Enter Account number");
+                    int accountNumber = sc.nextInt();
 
-                case 6:
-                    System.out.println("Check Balance selected");
-                    break;
+                    System.out.println("Enter initial balance:");
+                    double balance = sc.nextDouble();
 
-                case 7:
-                    System.out.println("View Transaction selected");
+                    Account acc = new Account(accountNumber, customer, balance);
+                    
+                    try{
+                        bank.createAccount(acc);
+                        System.out.println("Account created successfully");
+                    }
+
+                    catch(DuplicateAccountException e){
+                        System.out.println(e.getMessage());
+                    }
+
+                    catch(IllegalArgumentException e){
+                        System.out.println(e.getMessage());
+                    }
                     break;
+                }
+
+                case 3:{
+                    System.out.println("Enter Account Number");
+                    int accountNumber = sc.nextInt();
+
+                    System.out.println("Enter deposit amount");
+                    double amount =  sc.nextDouble();
+
+                    try{
+                        bank.deposit(accountNumber, amount);
+                        System.out.println("Amount deposited successfully!!");
+
+                        Account account = bank.findAccount(accountNumber);
+                        System.out.println("Current Balance:" + account.getBalance());
+                    }
+                    catch(Exception e){
+                        System.out.println(e.getMessage());
+                    }
+                    break;
+                }
+
+
+                case 4:{
+                    System.out.println("Enter Account Number");
+                    int accountNumber = sc.nextInt();
+
+                    System.out.println("Enter withdraw amount");
+                    double amount = sc.nextDouble();
+
+                    try{
+                        bank.withdraw(accountNumber, amount);
+                        System.out.println("Amount withdraw successfully!!");
+
+                        Account account = bank.findAccount(accountNumber);
+                        System.out.println("Current balance:" + account.getBalance());
+                    }
+
+                    catch(Exception e){
+                        System.out.println(e.getMessage());
+                    }
+                    break;
+                }
+
+                case 5:{
+                    
+                System.out.println("Enter Sender Account Number");
+                int fromAccountNumber = sc.nextInt();
+
+                System.out.println("Enter Receiver Account Number");
+                int toAccountNumber = sc.nextInt();
+
+                System.out.println("Enter Transfer amount");
+                double amount = sc.nextDouble();
+
+                try{
+                    bank.transfer(fromAccountNumber, toAccountNumber, amount);
+                    System.out.println("Transfer Successfully!!");
+
+                    Account sender = bank.findAccount(toAccountNumber);
+                    Account receiver = bank.findAccount(toAccountNumber);
+
+                    System.out.println("Sender balance:" + sender.getBalance());
+                    System.out.println("Receiver balance" + receiver.getBalance());
+                }
+
+                catch(Exception e){
+                    System.out.println(e.getMessage());
+                }
+                break;
+            }
+
+                case 6:{
+                    System.out.println("Enter account number");
+                    int accountNumber = sc.nextInt();
+
+                    Account account = bank.findAccount(accountNumber);
+
+                    if(account == null){
+                        System.out.println("Account not found");
+                        break;
+                    }
+
+                    System.out.println("Current Balance:" + account.getBalance());
+                    break;
+            }
+
+                case 7:{
+                    System.out.println("Enter Account number");
+                    int accountNumber = sc.nextInt();
+
+                    Account account = bank.findAccount(accountNumber);
+
+                    if(account == null){
+                        System.out.println("Account not found");
+                        break;
+                    }
+
+                    System.out.println("Transactions History");
+                    account.showTransaction();
+                    break;
+            }
 
                 case 8:
                     running = false;
