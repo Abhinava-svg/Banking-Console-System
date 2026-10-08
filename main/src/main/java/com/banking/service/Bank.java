@@ -8,7 +8,8 @@ import com.banking.Exceptions.InvalidAmountException;
 import com.banking.Model.Account;
 import com.banking.Exceptions.AccountNotFoundException;
 import java.util.*;
-
+import java.sql.SQLException;
+import com.banking.Dao.CustomerDAO;
 
 public class Bank {
     
@@ -18,12 +19,16 @@ public class Bank {
     private Map<Integer, Account> accountsMap;
     private Map<Integer, Customer> customersMap;
 
+    private CustomerDAO customerDAO;
+
     public Bank(){
         accounts = new ArrayList<>();
         accountsMap = new HashMap<>();
 
         customers = new ArrayList<>();
         customersMap = new HashMap<>();
+
+        customerDAO = new CustomerDAO();
     }
 
     public void createCustomer(Customer customer) throws DuplicateCustomerException{
@@ -52,6 +57,10 @@ public class Bank {
 
         customers.add(customer);
         customersMap.put(customer.getCustomerId(), customer);
+    }
+
+    public void saveCustomer(Customer customer) throws SQLException {
+        customerDAO.save(customer);
     }
 
     public Customer findCustomer(int customerId){
