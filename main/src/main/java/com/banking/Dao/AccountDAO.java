@@ -21,4 +21,25 @@ public class AccountDAO {
                 pstmt.executeUpdate();
         }
     }
+
+    public void updateBalance(int accountNumber, double newBalance) throws SQLException{
+        String sql = """
+                        UPDATE account 
+                        SET balance = ? 
+                        WHERE account_number = ?
+                        """;
+
+        try(Connection connection = DBConnection.getConnection();
+        PreparedStatement pstmt = connection.prepareStatement(sql)){
+
+            pstmt.setDouble(1, newBalance);
+            pstmt.setInt(2, accountNumber);
+
+            int rowsUpdated = pstmt.executeUpdate();
+
+            if(rowsUpdated == 0){
+                throw new SQLException("Account not found in database");
+            }
+        }
+    }
 }
