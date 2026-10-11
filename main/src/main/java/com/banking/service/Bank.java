@@ -1,6 +1,7 @@
 package com.banking.service;
 
 import com.banking.Model.Customer;
+import com.banking.Model.Transaction;
 import com.banking.Exceptions.DuplicateAccountException;
 import com.banking.Exceptions.DuplicateCustomerException;
 import com.banking.Exceptions.InsufficientBalanceException;
@@ -10,6 +11,8 @@ import com.banking.Exceptions.AccountNotFoundException;
 import java.util.*;
 import java.sql.SQLException;
 import com.banking.Dao.CustomerDAO;
+import com.banking.Dao.AccountDAO;
+import com.banking.Dao.TransactionDAO;
 
 public class Bank {
     
@@ -20,6 +23,8 @@ public class Bank {
     private Map<Integer, Customer> customersMap;
 
     private CustomerDAO customerDAO;
+    private AccountDAO accountDAO;
+    private TransactionDAO transactionDAO;
 
     public Bank(){
         accounts = new ArrayList<>();
@@ -29,6 +34,8 @@ public class Bank {
         customersMap = new HashMap<>();
 
         customerDAO = new CustomerDAO();
+        accountDAO = new AccountDAO();
+        transactionDAO = new TransactionDAO();
     }
 
     public void createCustomer(Customer customer) throws DuplicateCustomerException{
@@ -83,6 +90,14 @@ public class Bank {
 
         accounts.add(account);
         accountsMap.put(account.getAccountNumber(), account);
+    }
+
+    public void saveAccount(Account account) throws SQLException{
+        accountDAO.save(account);
+    }
+
+    public void saveTransaction(Account account, Transaction transaction) throws SQLException{
+        transactionDAO.save(account,transaction);
     }
 
     public Account findAccount(int accountNumber){
