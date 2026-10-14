@@ -56,8 +56,10 @@ public class AccountDAOTest {
             accountDAO.save(account);
             accountSaved = true;
 
-            accountDAO.updateBalance(accountNumber, 15000);
+            try(Connection connection = DBConnection.getConnection()){
 
+                accountDAO.updateBalance(connection, accountNumber, 15000);
+            }
             String sql = """
                         SELECT balance from account WHERE account_number = ?
                         """;

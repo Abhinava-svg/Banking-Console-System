@@ -15,6 +15,7 @@ import java.sql.PreparedStatement;
 import java.sql.SQLException;
 
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class BankDAOIntegrationTest {
 
@@ -106,5 +107,31 @@ public class BankDAOIntegrationTest {
         assertDoesNotThrow(() -> {bank.saveCustomer(customer);});
         assertDoesNotThrow(() -> {bank.saveAccount(account);});
         assertDoesNotThrow(() -> {bank.saveTransaction(account, transaction);});
+    }
+
+    @Test 
+    void testDepositToDatabase() throws Exception {
+
+        Bank bank = new Bank();
+
+        int customerId = newId();
+        int accountNumber = newId();
+
+        Customer customer = new Customer(customerId, "Deposit Test Customer", "deposit-" + customerId + "@example.test");
+        Account account = new Account(accountNumber, customer, 10000);
+
+        bank.saveCustomer(customer);
+        bank.saveAccount(account);
+
+        bank.createCustomer(customer);
+        bank.createAccount(account);
+
+        Account savedAccount = bank.findAccount(accountNumber);
+
+        assertEquals(10000, savedAccount.getBalance());
+    }
+
+    private int newId(){
+        return (int) (Math.random()  * 900000) + 100000;
     }
 }

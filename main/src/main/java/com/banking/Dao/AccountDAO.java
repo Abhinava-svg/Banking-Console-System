@@ -22,15 +22,15 @@ public class AccountDAO {
         }
     }
 
-    public void updateBalance(int accountNumber, double newBalance) throws SQLException{
+    public void updateBalance(Connection connection, int accountNumber, double newBalance) throws SQLException{
         String sql = """
                         UPDATE account 
                         SET balance = ? 
                         WHERE account_number = ?
                         """;
 
-        try(Connection connection = DBConnection.getConnection();
-        PreparedStatement pstmt = connection.prepareStatement(sql)){
+        
+        try(PreparedStatement pstmt = connection.prepareStatement(sql)){
 
             pstmt.setDouble(1, newBalance);
             pstmt.setInt(2, accountNumber);

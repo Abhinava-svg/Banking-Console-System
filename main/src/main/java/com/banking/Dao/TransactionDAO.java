@@ -21,4 +21,22 @@ public class TransactionDAO {
             pstmt.executeUpdate();
         }
     }
+
+    public void save(Connection connection, Account account, Transaction transaction) throws SQLException {
+
+        String sql = """
+                INSERT INTO bank_transaction
+                    (account_number, transaction_type, amount)
+                VALUES(?, ?, ?)
+                """;
+
+        try(PreparedStatement pstmt = connection.prepareStatement(sql)){
+
+            pstmt.setInt(1, account.getAccountNumber());
+            pstmt.setString(2, transaction.getType().name());
+            pstmt.setDouble(3, transaction.getAmount());
+
+            pstmt.executeUpdate();
+        }
+    }
 }

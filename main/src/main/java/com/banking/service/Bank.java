@@ -9,10 +9,13 @@ import com.banking.Exceptions.InvalidAmountException;
 import com.banking.Model.Account;
 import com.banking.Exceptions.AccountNotFoundException;
 import java.util.*;
+import java.sql.Connection;
 import java.sql.SQLException;
 import com.banking.Dao.CustomerDAO;
 import com.banking.Dao.AccountDAO;
 import com.banking.Dao.TransactionDAO;
+import com.banking.util.DBConnection;
+import com.banking.Enums.TransactionType;
 
 public class Bank {
     
@@ -141,6 +144,53 @@ public class Bank {
         
         fromAcc.withdraw(amount);
         toAcc.deposit(amount);
+    }
+
+    public void depositTODatabase(int accountNumber, double amount) throws SQLException, InvalidAmountException, AccountNotFoundException{
+        Account account = findAccount(accountNumber);
+
+        if(account == null){
+            throw new AccountNotFoundException("Account not found"); 
+        }
+
+        if(amount <= 0){
+            throw new InvalidAmountException("Amount should be greater than zero");
+        }
+
+        double oldBalance = account.getBalance();
+        double newBalance = oldBalance + amount;
+
+        Connection connection = null;
+
+        try{
+            connection = DBConnection.getConnection();
+
+            connection.setAutoCommit(false);
+
+            accountDAO.updateBalance(connection, accountNumber, newBalance);
+
+            Transaction transaction = new Transaction(0, TransactionType.DEPOSIT, amount);
+
+            transactionDAO.save(connection, account, transaction);
+
+            connection.commit();
+            
+        }
+
+        catch(SQLException e){
+
+            if(connection != null){
+                connection.rollback();
+            }
+            throw e;
+        }
+
+        finally{
+
+            if(connection != null){
+                connection.close();
+            }
+        }
     }
 
 }
