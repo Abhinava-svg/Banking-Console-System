@@ -12,10 +12,13 @@ import org.junit.jupiter.api.Test;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import java.sql.SQLException;
 
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class BankDAOIntegrationTest {
 
@@ -113,25 +116,117 @@ public class BankDAOIntegrationTest {
     void testDepositToDatabase() throws Exception {
 
         Bank bank = new Bank();
+        double openingBalance = 10_000;
+        double depositAmount = 5_000;
 
         int customerId = newId();
         int accountNumber = newId();
 
         Customer customer = new Customer(customerId, "Deposit Test Customer", "deposit-" + customerId + "@example.test");
-        Account account = new Account(accountNumber, customer, 10000);
+        Account account = new Account(accountNumber, customer, openingBalance);
 
-        bank.saveCustomer(customer);
-        bank.saveAccount(account);
+        boolean customerSaved = false;
+        boolean accountSaved = false;
 
-        bank.createCustomer(customer);
-        bank.createAccount(account);
+        try {
+            bank.saveCustomer(customer);
+            customerSaved = true;
 
-        Account savedAccount = bank.findAccount(accountNumber);
+            bank.saveAccount(account);
+            accountSaved = true;
 
-        assertEquals(10000, savedAccount.getBalance());
+            bank.createCustomer(customer);
+            bank.createAccount(account);
+
+            Account savedAccount = bank.findAccount(accountNumber);
+
+            assertEquals(openingBalance, savedAccount.getBalance(), 0.001);
+
+            bank.depositToDatabase(accountNumber, depositAmount);
+
+            assertEquals(openingBalance + depositAmount, savedAccount.getBalance(), 0.001);
+            assertPersistedDeposit(
+                    accountNumber, openingBalance + depositAmount, depositAmount);
+        } finally {
+            if (accountSaved) {
+                deleteTransactions(accountNumber);
+                deleteAccount(accountNumber);
+            }
+
+            if (customerSaved) {
+                deleteCustomer(customerId);
+            }
+        }
+    }
+
+    private void assertPersistedDeposit(
+            int accountNumber, double expectedBalance, double expectedDeposit)
+            throws SQLException {
+        String balanceSql = "SELECT balance FROM account WHERE account_number = ?";
+
+        try (Connection connection = DBConnection.getConnection();
+             PreparedStatement pstmt = connection.prepareStatement(balanceSql)) {
+            pstmt.setInt(1, accountNumber);
+
+            try (ResultSet rs = pstmt.executeQuery()) {
+                assertTrue(rs.next(), "The account should be stored in the database");
+                assertEquals(expectedBalance, rs.getDouble("balance"), 0.001);
+            }
+        }
+
+        String transactionSql = """
+                SELECT transaction_type, amount
+                FROM bank_transaction
+                WHERE account_number = ?
+                """;
+
+        try (Connection connection = DBConnection.getConnection();
+             PreparedStatement pstmt = connection.prepareStatement(transactionSql)) {
+            pstmt.setInt(1, accountNumber);
+
+            try (ResultSet rs = pstmt.executeQuery()) {
+                assertTrue(rs.next(), "The deposit transaction should be stored in the database");
+                assertEquals(TransactionType.DEPOSIT.name(), rs.getString("transaction_type"));
+                assertEquals(expectedDeposit, rs.getDouble("amount"), 0.001);
+                assertFalse(rs.next(), "Exactly one transaction should be created for the deposit");
+            }
+        }
+    }
+
+    private void deleteAccount(int accountNumber) throws SQLException {
+        String sql = "DELETE FROM account WHERE account_number = ?";
+
+        try (Connection connection = DBConnection.getConnection();
+             PreparedStatement pstmt = connection.prepareStatement(sql)) {
+
+            pstmt.setInt(1, accountNumber);
+            pstmt.executeUpdate();
+        }
+    }
+
+    private void deleteCustomer(int customerId) throws SQLException {
+        String sql = "DELETE FROM customer WHERE customer_id = ?";
+
+        try (Connection connection = DBConnection.getConnection();
+             PreparedStatement pstmt = connection.prepareStatement(sql)) {
+
+            pstmt.setInt(1, customerId);
+            pstmt.executeUpdate();
+        }
     }
 
     private int newId(){
         return (int) (Math.random()  * 900000) + 100000;
+    }
+
+    private void deleteTransactions(int accountNumber) throws SQLException {
+        String sql = "DELETE FROM bank_transaction WHERE account_number = ?";
+
+        try (Connection connection = DBConnection.getConnection();
+             PreparedStatement pstmt = connection.prepareStatement(sql)) {
+
+            pstmt.setInt(1, accountNumber);
+            pstmt.executeUpdate();
+        }
     }
 }

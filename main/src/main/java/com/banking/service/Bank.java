@@ -146,7 +146,7 @@ public class Bank {
         toAcc.deposit(amount);
     }
 
-    public void depositTODatabase(int accountNumber, double amount) throws SQLException, InvalidAmountException, AccountNotFoundException{
+    public void depositToDatabase(int accountNumber, double amount) throws SQLException, InvalidAmountException, AccountNotFoundException{
         Account account = findAccount(accountNumber);
 
         if(account == null){
@@ -169,11 +169,12 @@ public class Bank {
 
             accountDAO.updateBalance(connection, accountNumber, newBalance);
 
-            Transaction transaction = new Transaction(0, TransactionType.DEPOSIT, amount);
+            Transaction transaction = new Transaction(newTransactionId(), TransactionType.DEPOSIT, amount);
 
             transactionDAO.save(connection, account, transaction);
 
             connection.commit();
+            account.deposit(amount);
             
         }
 
@@ -191,6 +192,10 @@ public class Bank {
                 connection.close();
             }
         }
+    }
+
+    private int newTransactionId(){
+        return (int) (Math.random() * 900000) + 100000;
     }
 
 }
