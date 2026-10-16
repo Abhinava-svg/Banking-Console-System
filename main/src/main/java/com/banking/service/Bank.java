@@ -205,7 +205,13 @@ public class Bank {
             throw new InvalidAmountException("Amount should be greater than zero");
         }
 
+        
         double oldBalance = account.getBalance();
+
+        if(amount > oldBalance){
+            throw new InsufficientBalanceException("Insufficient balance");
+        }
+        
         double newBalance = oldBalance - amount;
 
         Connection connection = null;
@@ -240,6 +246,76 @@ public class Bank {
             }
         }
     }
+
+    private void transferToDatabase(int fromAccountNumber, int toAccountNumber, double amount) throws SQLException, InvalidAmountException, AccountNotFoundException, InsufficientBalanceException{
+        Account fromAccount = findAccount(fromAccountNumber);
+        Account toAccount = findAccount(toAccountNumber);
+
+        if(fromAccount == null){
+            throw new AccountNotFoundException("Source account not found");
+        }
+
+        if(toAccount == null){
+            throw new AccountNotFoundException("Destination account not found");
+        }
+
+        if(amount <= 0){
+            throw new InvalidAmountException("Amount should be greater than zero");
+        }
+
+        if(fromAccountNumber == toAccountNumber){
+            throw new IllegalArgumentException("cannot transfer to the same account");
+        }
+
+        double fromOldBalance = fromAccount.getBalance();
+
+        if(amount > fromOldBalance){
+            throw new InsufficientBalanceException("Insufficient Balance");
+        }
+
+        double fromNewBalance = fromOldBalance - amount;
+        double toNewBalance = toAccount.getBalance() + amount;
+
+        Connection connection = null;
+
+        try{
+            connection = DBConnection.getConnection();
+            connection.setAutoCommit(false);
+
+            accountDAO.updateBalance(connection, fromAccountNumber, fromNewBalance);
+
+            accountDAO.updateBalance(connection, toAccountNumber, toNewBalance);
+
+            Transaction withdrawTransaction = new Transaction(newTransactionId(), TransactionType.WITHDRAW, amount);
+
+            transactionDAO.save(connection, fromAccount, withdrawTransaction);
+
+            Transaction deposiTransaction = new Transaction(newTransactionId(), TransactionType.DEPOSIT, amount);
+
+            transactionDAO.save(connection, toAccount, deposiTransaction);
+
+            connection.commit();
+
+            fromAccount.withdraw(amount);
+            toAccount.deposit(amount);
+
+        }
+
+        catch(SQLException e){
+
+            if(connection != null){
+                connection.rollback();
+            }
+            throw e;
+        }
+
+        finally{
+
+            if(connection != null){
+                connection.close();
+            }
+        }
+    } 
 
     private int newTransactionId(){
         return (int) (Math.random() * 900000) + 100000;
