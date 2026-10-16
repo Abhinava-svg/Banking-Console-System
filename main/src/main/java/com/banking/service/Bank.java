@@ -194,6 +194,53 @@ public class Bank {
         }
     }
 
+    public void withdrawToDatabase(int accountNumber, double amount) throws SQLException, InvalidAmountException, AccountNotFoundException, InsufficientBalanceException {
+        Account account = findAccount(accountNumber);
+
+        if(account == null){
+            throw new AccountNotFoundException("Account not found");
+        }
+
+        if(amount <= 0){
+            throw new InvalidAmountException("Amount should be greater than zero");
+        }
+
+        double oldBalance = account.getBalance();
+        double newBalance = oldBalance - amount;
+
+        Connection connection = null;
+
+        try{
+            connection = DBConnection.getConnection();
+
+            connection.setAutoCommit(false);
+
+            accountDAO.updateBalance(connection, accountNumber, newBalance);
+
+            Transaction transaction = new Transaction(newTransactionId(), TransactionType.WITHDRAW, amount);
+
+            transactionDAO.save(connection, account, transaction);
+
+            connection.commit();
+            account.withdraw(amount);
+        }
+
+        catch(SQLException e){
+
+            if(connection != null){
+                connection.rollback();
+            }
+            throw e;
+        }
+
+        finally{
+
+            if(connection != null){
+                connection.close();
+            }
+        }
+    }
+
     private int newTransactionId(){
         return (int) (Math.random() * 900000) + 100000;
     }

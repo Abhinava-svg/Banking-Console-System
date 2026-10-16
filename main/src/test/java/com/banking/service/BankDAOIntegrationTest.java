@@ -160,6 +160,53 @@ public class BankDAOIntegrationTest {
         }
     }
 
+    @Test 
+    void testWithdrawToDatabase() throws Exception{
+
+        Bank bank = new Bank();
+        double openingBalance = 15_000;
+        double withdrawAmount = 5_000;
+
+        int customerId = newId();
+        int accountNumber = newId();
+
+        Customer customer = new Customer(customerId, "Withdraw Test Customer", "withdraw-" + customerId + "@example.test");
+        Account account = new Account(accountNumber, customer, openingBalance);
+
+        boolean customerSaved =  false;
+        boolean accountSaved = false;
+
+        try{
+            bank.saveCustomer(customer);
+            customerSaved = true;
+
+            bank.saveAccount(account);
+            accountSaved = true;
+
+            bank.createCustomer(customer);
+            bank.createAccount(account);
+
+            Account savedAccount = bank.findAccount(accountNumber);
+
+            assertEquals(openingBalance, savedAccount.getBalance(), 0.001);
+
+            bank.withdrawToDatabase(accountNumber, withdrawAmount);
+
+            assertEquals(openingBalance - withdrawAmount, savedAccount.getBalance(), 0.001);
+            assertPersistedWithdraw(accountNumber, openingBalance - withdrawAmount, withdrawAmount);
+
+        }finally{
+            if(accountSaved){
+                deleteTransactions(accountNumber);
+                deleteAccount(accountNumber);
+            }
+
+            if(customerSaved){
+                deleteCustomer(customerId);
+            }
+        }
+    }
+
     private void assertPersistedDeposit(
             int accountNumber, double expectedBalance, double expectedDeposit)
             throws SQLException {
@@ -190,6 +237,40 @@ public class BankDAOIntegrationTest {
                 assertEquals(TransactionType.DEPOSIT.name(), rs.getString("transaction_type"));
                 assertEquals(expectedDeposit, rs.getDouble("amount"), 0.001);
                 assertFalse(rs.next(), "Exactly one transaction should be created for the deposit");
+            }
+        }
+    }
+
+    private void assertPersistedWithdraw(
+            int accountNumber, double expectedBalance, double expectedWithdraw)
+            throws SQLException {
+        String balanceSql = "SELECT balance FROM account WHERE account_number = ?";
+
+        try (Connection connection = DBConnection.getConnection();
+             PreparedStatement pstmt = connection.prepareStatement(balanceSql)) {
+            pstmt.setInt(1, accountNumber);
+
+            try (ResultSet rs = pstmt.executeQuery()) {
+                assertTrue(rs.next(), "The account should be stored in the database");
+                assertEquals(expectedBalance, rs.getDouble("balance"), 0.001);
+            }
+        }
+
+        String transactionSql = """
+                SELECT transaction_type, amount
+                FROM bank_transaction
+                WHERE account_number = ?
+                """;
+
+        try (Connection connection = DBConnection.getConnection();
+             PreparedStatement pstmt = connection.prepareStatement(transactionSql)) {
+            pstmt.setInt(1, accountNumber);
+
+            try (ResultSet rs = pstmt.executeQuery()) {
+                assertTrue(rs.next(), "The withdraw transaction should be stored in the database");
+                assertEquals(TransactionType.WITHDRAW.name(), rs.getString("transaction_type"));
+                assertEquals(expectedWithdraw, rs.getDouble("amount"), 0.001);
+                assertFalse(rs.next(), "Exactly one transaction should be created for the withdraw");
             }
         }
     }
