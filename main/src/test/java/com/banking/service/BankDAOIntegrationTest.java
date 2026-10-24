@@ -6,6 +6,7 @@ import com.banking.Model.Customer;
 import com.banking.Model.Transaction;
 import com.banking.Enums.TransactionType;
 import com.banking.Exceptions.InsufficientBalanceException;
+import com.banking.Exceptions.InvalidAmountException;
 
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -358,7 +359,7 @@ public class BankDAOIntegrationTest {
             PreparedStatement pstmt = connection.prepareStatement(sql)){
                 pstmt.setInt(1, accountNumber);
 
-                try(Result rs = pstmt.executeQuery()){
+                try(ResultSet rs = pstmt.executeQuery()){
                     assertEquals(true, rs.next());
 
                     assertEquals(expectedBalance, rs.getDouble("balance"), 0.001);
@@ -466,7 +467,7 @@ public class BankDAOIntegrationTest {
                 bank.createAccount(account);
 
                 assertThrows(IllegalArgumentException.class, () -> bank.transferToDatabase(accountNumber, accountNumber, 1000));
-                assertEquals(1000, account.getBalance(), 0.001);
+                assertEquals(10000, account.getBalance(), 0.001);
                 assertPersistedBalance(accountNumber, 10000);
 
             }finally{
@@ -485,6 +486,74 @@ public class BankDAOIntegrationTest {
         @Test 
         void testTransferInvalidAmount() throws Exception {
             
+            double openingBalance = 10000;
+
+            int fromCustomerId = newId();
+            int toCustomerId = newId();
+
+            int fromAccountNumber = newId();
+            int toAccountNumber = newId();
+
+            Customer fromCustomer = new Customer(fromCustomerId, "Invalid Amount Sender", "invalid-sender-" + fromCustomerId + "@example.test");
+
+            Customer toCustomer = new Customer(toCustomerId, "Invalid Amount Receiver", "Invalid-receiver-" + toCustomerId + "@example.test");
+
+            Account fromAccount = new Account(fromAccountNumber, fromCustomer, openingBalance);
+
+            Account toAccount = new Account(toAccountNumber, toCustomer, openingBalance);
+
+            boolean fromCustomerSaved = false;
+            boolean toCustomerSaved = false;
+            boolean fromAccountSaved = false;
+            boolean toAccountSaved = false;
+
+            try{
+
+                bank.saveCustomer(fromCustomer);
+                fromCustomerSaved = true;
+
+                bank.saveCustomer(toCustomer);
+                fromCustomerSaved = true;
+
+                bank.saveAccount(fromAccount);
+                fromAccountSaved = true;
+
+                bank.saveAccount(toAccount);
+                fromAccountSaved = true;
+
+                bank.createCustomer(fromCustomer);
+                bank.createCustomer(toCustomer);
+
+                bank.createAccount(fromAccount);
+                bank.createAccount(toAccount);
+
+                assertThrows(InvalidAmountException.class, () -> bank.transferToDatabase(fromAccountNumber, toAccountNumber, 0));
+
+                assertEquals(10000, fromAccount.getBalance(), 0.001);
+                assertEquals(10000, toAccount.getBalance(), 0.001);
+                assertPersistedBalance(fromAccountNumber, 10000);
+                assertPersistedBalance(toAccountNumber, 10000);
+
+            }finally{
+
+                if(fromAccountSaved){
+                    deleteTransactions(fromAccountNumber);
+                    deleteAccount(fromAccountNumber);
+                }
+
+                if(toAccountSaved){
+                    deleteTransactions(toAccountNumber);
+                    deleteAccount(toAccountNumber);
+                }
+
+                if(fromCustomerSaved){
+                    deleteCustomer(fromCustomerId);
+                }
+
+                if(toCustomerSaved){
+                    deleteCustomer(toCustomerId);
+                }
+            }
         }
 
     private void deleteAccount(int accountNumber) throws SQLException {
@@ -522,7 +591,5 @@ public class BankDAOIntegrationTest {
             pstmt.setInt(1, accountNumber);
             pstmt.executeUpdate();
         }
-    }
-
-    
+    }    
 }

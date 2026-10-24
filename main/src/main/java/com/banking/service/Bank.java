@@ -247,7 +247,7 @@ public class Bank {
         }
     }
 
-    private void transferToDatabase(int fromAccountNumber, int toAccountNumber, double amount) throws SQLException, InvalidAmountException, AccountNotFoundException, InsufficientBalanceException{
+    public void transferToDatabase(int fromAccountNumber, int toAccountNumber, double amount) throws SQLException, InvalidAmountException, AccountNotFoundException, InsufficientBalanceException{
         Account fromAccount = findAccount(fromAccountNumber);
         Account toAccount = findAccount(toAccountNumber);
 
