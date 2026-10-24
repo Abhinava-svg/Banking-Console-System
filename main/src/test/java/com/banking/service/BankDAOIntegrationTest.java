@@ -5,6 +5,7 @@ import com.banking.Model.Account;
 import com.banking.Model.Customer;
 import com.banking.Model.Transaction;
 import com.banking.Enums.TransactionType;
+import com.banking.Exceptions.InsufficientBalanceException;
 
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -15,11 +16,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
-import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertTrue;
-
+import static org.junit.jupiter.api.Assertions.*;
 
 public class BankDAOIntegrationTest {
 
@@ -207,6 +204,80 @@ public class BankDAOIntegrationTest {
         }
     }
 
+    @Test
+    public void testTransferToDatabase() throws Exception{
+
+        double fromOpeningBalance = 10000;
+        double toOpeningBalance = 5000;
+        double transferAmount = 3000;
+
+        int fromCustomerId = newId();
+        int toCustomerId = newId();
+
+        int fromAccountNumber = newId();
+        int toAccountNumber = newId();
+
+        Customer fromCustomer = new Customer(fromCustomerId, "Transfer sender", "sender-" + fromCustomerId + "@example.test");
+        Customer toCustomer = new Customer(toCustomerId, "Transfer receiver", "receiver-" + toCustomerId + "@example.test");
+
+        Account fromAccount = new Account(fromAccountNumber, fromCustomer, fromOpeningBalance);
+        Account toAccount = new Account(toAccountNumber, toCustomer, toOpeningBalance);
+
+        boolean fromCustomerSaved = false;
+        boolean toCustomerSaved = false;
+        boolean fromAccountSaved = false;
+        boolean toAccountSaved = false;
+
+
+        try{
+            bank.saveCustomer(fromCustomer);
+            fromCustomerSaved = true;
+
+            bank.saveCustomer(toCustomer);
+            toCustomerSaved = true;
+            
+            bank.saveAccount(fromAccount);
+            fromAccountSaved = true;
+            
+            bank.saveAccount(toAccount);
+            toAccountSaved = true;
+
+            bank.createCustomer(fromCustomer);
+            bank.createCustomer(toCustomer);
+
+            bank.createAccount(fromAccount);
+            bank.createAccount(toAccount);
+
+            bank.transferToDatabase(fromAccountNumber, toAccountNumber, transferAmount);
+
+            assertEquals(7000, fromAccount.getBalance(), 0.001);
+            assertEquals(8000, toAccount.getBalance(), 0.001);
+
+            assertPersistedBalance(fromAccountNumber, 7000);
+            assertPersistedBalance(toAccountNumber, 8000);
+
+        }finally{
+            
+            if(fromAccountSaved){
+                deleteTransactions(fromAccountNumber);
+                deleteAccount(fromAccountNumber);
+            }
+
+            if(toAccountSaved){
+                deleteTransactions(toAccountNumber);
+                deleteAccount(toAccountNumber);
+            }
+
+            if(fromCustomerSaved){
+                deleteCustomer(fromCustomerId);
+            }
+
+            if(toCustomerSaved){
+                deleteCustomer(toCustomerId);
+            }
+        }
+    }
+
     private void assertPersistedDeposit(
             int accountNumber, double expectedBalance, double expectedDeposit)
             throws SQLException {
@@ -275,6 +346,147 @@ public class BankDAOIntegrationTest {
         }
     }
 
+    private void assertPersistedBalance(int accountNumber, double expectedBalance) throws SQLException{
+        
+        String sql = """
+                SELECT balance 
+                FROM account 
+                WHERE account_number = ?
+        """;
+
+        try(Connection connection = DBConnection.getConnection();
+            PreparedStatement pstmt = connection.prepareStatement(sql)){
+                pstmt.setInt(1, accountNumber);
+
+                try(Result rs = pstmt.executeQuery()){
+                    assertEquals(true, rs.next());
+
+                    assertEquals(expectedBalance, rs.getDouble("balance"), 0.001);
+                }
+            }
+        }
+
+        @Test 
+        void testTransferInsufficientBalance() throws Exception {
+
+            double fromOpeningBalance = 10000;
+            double toOpeningBalance = 5000;
+            double transferAmount = 15000;
+
+            int fromCustomerId = newId();
+            int toCustomerId = newId();
+
+            int fromAccountNumber = newId();
+            int toAccountNumber = newId();
+
+            Customer fromCustomer = new Customer(fromCustomerId, "Insufficient sender", "Insufficient-sender" + fromCustomerId + "@example.test");
+            Customer toCustomer = new Customer(toCustomerId, "Insufficient- reciever", "@exxample.test");
+
+            Account fromAccount = new Account(fromAccountNumber, fromCustomer, fromOpeningBalance);            
+            Account toAccount = new Account(toAccountNumber, toCustomer, toOpeningBalance);
+            
+            boolean fromCustomerSaved = false;
+            boolean toCustomerSaved = false;
+            boolean fromAccountSaved = false;
+            boolean toAccountSaved = false;
+
+            try{
+                bank.saveCustomer(fromCustomer);
+                fromCustomerSaved = true;
+
+                bank.saveCustomer(toCustomer);
+                toCustomerSaved = true;
+
+                bank.saveAccount(fromAccount);
+                fromAccountSaved = true;
+
+                bank.saveAccount(toAccount);
+                toAccountSaved = true;
+
+                bank.createCustomer(fromCustomer);
+                bank.createCustomer(toCustomer);
+
+                bank.createAccount(fromAccount);
+                bank.createAccount(toAccount);
+
+                assertThrows(InsufficientBalanceException.class, () -> bank.transferToDatabase(fromAccountNumber, toAccountNumber, transferAmount));
+
+                assertEquals(10000, fromAccount.getBalance(), 0.001);
+
+                assertEquals(5000, toAccount.getBalance(), 0.001);
+
+                assertPersistedBalance(fromAccountNumber, 10000);
+
+                assertPersistedBalance(toAccountNumber, 5000);
+            } finally{
+
+                if(fromAccountSaved){
+                    deleteTransactions(fromAccountNumber);
+                    deleteAccount(fromAccountNumber);
+                }
+
+                if(toAccountSaved){
+                    deleteTransactions(toAccountNumber);
+                    deleteAccount(toAccountNumber);
+                }
+
+                if(fromAccountSaved){
+                    deleteCustomer(fromCustomerId);
+                }
+
+                if(toCustomerSaved){
+                    deleteCustomer(toCustomerId);
+                }
+            }
+        }
+
+        @Test 
+        void testTransferToSameAccount() throws Exception{
+
+            double openingBalance = 10000;
+
+            int customerId = newId();
+            int accountNumber = newId();
+
+            Customer customer = new Customer(customerId, "Same Account Test", "same - account-" + customerId + "@example.test");
+            Account account = new Account(accountNumber, customer, openingBalance);
+
+            boolean customerSaved = false;
+            boolean accountSaved = false;
+
+            try{
+
+                bank.saveCustomer(customer);
+                customerSaved = true;
+
+                bank.saveAccount(account);
+                accountSaved = true;
+
+                bank.createCustomer(customer);
+                bank.createAccount(account);
+
+                assertThrows(IllegalArgumentException.class, () -> bank.transferToDatabase(accountNumber, accountNumber, 1000));
+                assertEquals(1000, account.getBalance(), 0.001);
+                assertPersistedBalance(accountNumber, 10000);
+
+            }finally{
+
+                if(accountSaved){
+                    deleteTransactions(accountNumber);
+                    deleteAccount(accountNumber);
+                }
+
+                if(customerSaved){
+                    deleteCustomer(customerId);
+                }
+            }
+        }
+
+        @Test 
+        void testTransferInvalidAmount() throws Exception {
+            
+        }
+
     private void deleteAccount(int accountNumber) throws SQLException {
         String sql = "DELETE FROM account WHERE account_number = ?";
 
@@ -311,4 +523,6 @@ public class BankDAOIntegrationTest {
             pstmt.executeUpdate();
         }
     }
+
+    
 }
